@@ -21,53 +21,53 @@ typedef struct {
 	char* dev_;
 } Param;
 
-typedef struct 
+typedef struct
 {
-    u_int8_t  dhost[ETHER_ADDR_LEN];/* destination ethernet address */
-    u_int8_t  shost[ETHER_ADDR_LEN];/* source ethernet address */
-    u_int16_t type;                 /* protocol */
+	u_int8_t  dhost[ETHER_ADDR_LEN];/* destination ethernet address */
+	u_int8_t  shost[ETHER_ADDR_LEN];/* source ethernet address */
+	u_int16_t type;                 /* protocol */
 }ethernet_hdr;
 
 typedef struct {
-    u_int8_t ip[IP_ADDR_LEN];
+	u_int8_t ip[IP_ADDR_LEN];
 }ip_addr;
 
 typedef struct {
-    u_int8_t v;         /* version */
-    u_int8_t hl;      /* header length */
-    u_int8_t tos;       /* type of service */
-    u_int16_t len;         /* total length */
-    u_int16_t id;          /* identification */
-    u_int16_t off;
-    u_int8_t ttl;          /* time to live */
-    u_int8_t p;            /* protocol */
-    u_int16_t sum;         /* checksum */
-    ip_addr src, dst; /* source and dest address */
+	u_int8_t v;         /* version */
+	u_int8_t hl;      /* header length */
+	u_int8_t tos;       /* type of service */
+	u_int16_t len;         /* total length */
+	u_int16_t id;          /* identification */
+	u_int16_t off;
+	u_int8_t ttl;          /* time to live */
+	u_int8_t p;            /* protocol */
+	u_int16_t sum;         /* checksum */
+	ip_addr src, dst; /* source and dest address */
 }ipv4_hdr;
 
 typedef struct {
-    u_int16_t sport;       /* source port */
-    u_int16_t dport;       /* destination port */
-    u_int32_t seq;          /* sequence number */
-    u_int32_t ack;          /* acknowledgement number */
-    u_int8_t off;        /* data offset */
-    u_int8_t x2;         /* (unused) */
-    u_int8_t flags;       /* control flags */
-    u_int16_t win;         /* window */
-    u_int16_t sum;         /* checksum */
-    u_int16_t urp;         /* urgent pointer */
+	u_int16_t sport;       /* source port */
+	u_int16_t dport;       /* destination port */
+	u_int32_t seq;          /* sequence number */
+	u_int32_t ack;          /* acknowledgement number */
+	u_int8_t off;        /* data offset */
+	u_int8_t x2;         /* (unused) */
+	u_int8_t flags;       /* control flags */
+	u_int16_t win;         /* window */
+	u_int16_t sum;         /* checksum */
+	u_int16_t urp;         /* urgent pointer */
 }tcp_hdr;
 
-typedef struct{
-    ethernet_hdr ethernet;
-    ipv4_hdr ipv4;
-    tcp_hdr tcp;
-    uint8_t payload[8];
-}Header; 
+typedef struct {
+	ethernet_hdr ethernet;
+	ipv4_hdr ipv4;
+	tcp_hdr tcp;
+	uint8_t payload[8];
+}Header;
 
 void usage() {
-    cout << "syntax: pcap-test <interface>\n";
-    cout << "sample: pcap-test wlan0\n";
+	cout << "syntax: pcap-test <interface>\n";
+	cout << "sample: pcap-test wlan0\n";
 }
 
 bool parse_param(Param* param, int argc, char* argv[]) {
@@ -80,7 +80,7 @@ bool parse_param(Param* param, int argc, char* argv[]) {
 }
 
 void parse_ethernet(const u_char* packet, Header& header) {
-	for(int i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (int i = 0; i < ETHER_ADDR_LEN; i++) {
 		header.ethernet.dhost[i] = packet[i];
 		header.ethernet.shost[i] = packet[i + ETHER_ADDR_LEN];
 	}
@@ -97,9 +97,9 @@ void parse_ip(const u_char* packet, Header& header) {
 	header.ipv4.ttl = packet[8];
 	header.ipv4.p = packet[9];
 	header.ipv4.sum = ADD16(packet[10], packet[11]);
-	for(int i = 0; i < IP_ADDR_LEN; i++) {
-		header.ipv4.src.ip[i] = packet[12+i];
-		header.ipv4.dst.ip[i] = packet[16+i];
+	for (int i = 0; i < IP_ADDR_LEN; i++) {
+		header.ipv4.src.ip[i] = packet[12 + i];
+		header.ipv4.dst.ip[i] = packet[16 + i];
 	}
 }
 
@@ -117,55 +117,54 @@ void parse_tcp(const u_char* packet, Header& header) {
 }
 
 void parse_packet(const u_char* packet) {
-    Header header;
+	Header header;
 
 	parse_ethernet(packet, header);
-	if(header.ethernet.type != IP) {
+	if (header.ethernet.type != IP) {
 		cout << "this is not IP";
-        return;
-    }
+		return;
+	}
 
 	parse_ip(&packet[14], header);
-	if(header.ipv4.p != TCP) {
+	if (header.ipv4.p != TCP) {
 		cout << "this is not TCP";
-        return;
-    }
+		return;
+	}
 
 	parse_tcp(&packet[14 + header.ipv4.hl * 4], header);
 
 	cout << uppercase << hex;
 	cout << "\nehternet src mac     ";
-	for(int i = 0; i < ETHER_ADDR_LEN; i++) {
-        //printf("%X", header.ethernet.shost[i]);
+	for (int i = 0; i < ETHER_ADDR_LEN; i++) {
 		cout << static_cast<int>(header.ethernet.shost[i]);
-		if(i != 5) cout << ':';
+		if (i != 5) cout << ':';
 	}
 	cout << "\nehternet dst mac     ";
-	for(int i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (int i = 0; i < ETHER_ADDR_LEN; i++) {
 		cout << static_cast<int>(header.ethernet.dhost[i]);
-		if(i != 5) cout << ':';
+		if (i != 5) cout << ':';
 	}
 
 	cout << dec;
 	cout << "\nip header src ip     ";
-	for(int i = 0; i < IP_ADDR_LEN; i++) {
+	for (int i = 0; i < IP_ADDR_LEN; i++) {
 		cout << static_cast<int>(header.ipv4.src.ip[i]);
-		if(i!=3) cout << '.';
+		if (i != 3) cout << '.';
 	}
 	cout << "\nip header dst ip     ";
-	for(int i = 0; i < IP_ADDR_LEN; i++) {
+	for (int i = 0; i < IP_ADDR_LEN; i++) {
 		cout << static_cast<int>(header.ipv4.dst.ip[i]);
-		if(i!=3) cout << '.';
+		if (i != 3) cout << '.';
 	}
 
 	cout << "\ntcp header src port  " << header.tcp.sport;
 	cout << "\ntcp header dst port  " << header.tcp.dport;
 
 	int payload_len = header.ipv4.len - (header.ipv4.hl + header.tcp.off) * 4;
-	if(payload_len > 0) {
+	if (payload_len > 0) {
 		cout << uppercase << hex;
 		cout << "\npayload              ";
-		for(int i = 0; i < 8; i++) {
+		for (int i = 0; i < 8; i++) {
 			cout << static_cast<int>(packet[i + 14 + (header.ipv4.hl + header.tcp.off) * 4]);
 		}
 	}
