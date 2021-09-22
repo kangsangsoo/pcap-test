@@ -121,56 +121,56 @@ void parse_packet(const u_char* packet) {
 
 	parse_ethernet(packet, header);
 	if(header.ethernet.type != IP) {
-        cout << "this is not IP";
+		cout << "this is not IP";
         return;
     }
 
 	parse_ip(&packet[14], header);
 	if(header.ipv4.p != TCP) {
-        cout << "this is not TCP";
+		cout << "this is not TCP";
         return;
     }
 
 	parse_tcp(&packet[14 + header.ipv4.hl * 4], header);
 
-    cout << uppercase << hex;
-    cout << "\nehternet src mac     ";
+	cout << uppercase << hex;
+	cout << "\nehternet src mac     ";
 	for(int i = 0; i < ETHER_ADDR_LEN; i++) {
         //printf("%X", header.ethernet.shost[i]);
-        cout << static_cast<int>(header.ethernet.shost[i]);
+		cout << static_cast<int>(header.ethernet.shost[i]);
 		if(i != 5) cout << ':';
 	}
-    cout << "\nehternet dst mac     ";
+	cout << "\nehternet dst mac     ";
 	for(int i = 0; i < ETHER_ADDR_LEN; i++) {
-        cout << static_cast<int>(header.ethernet.dhost[i]);
+		cout << static_cast<int>(header.ethernet.dhost[i]);
 		if(i != 5) cout << ':';
 	}
 
-    cout << dec;
-    cout << "\nip header src ip     ";
+	cout << dec;
+	cout << "\nip header src ip     ";
 	for(int i = 0; i < IP_ADDR_LEN; i++) {
-        cout << static_cast<int>(header.ipv4.src.ip[i]);
+		cout << static_cast<int>(header.ipv4.src.ip[i]);
 		if(i!=3) cout << '.';
 	}
-    cout << "\nip header dst ip     ";
+	cout << "\nip header dst ip     ";
 	for(int i = 0; i < IP_ADDR_LEN; i++) {
-        cout << static_cast<int>(header.ipv4.dst.ip[i]);
+		cout << static_cast<int>(header.ipv4.dst.ip[i]);
 		if(i!=3) cout << '.';
 	}
 
-    cout << "\ntcp header src port  " << header.tcp.sport;
-    cout << "\ntcp header dst port  " << header.tcp.dport;
+	cout << "\ntcp header src port  " << header.tcp.sport;
+	cout << "\ntcp header dst port  " << header.tcp.dport;
 
 	int payload_len = header.ipv4.len - (header.ipv4.hl + header.tcp.off) * 4;
 	if(payload_len > 0) {
-        cout << uppercase << hex;
-        cout << "\npayload              ";
+		cout << uppercase << hex;
+		cout << "\npayload              ";
 		for(int i = 0; i < 8; i++) {
-            cout << static_cast<int>(packet[i + 14 + (header.ipv4.hl + header.tcp.off) * 4]);
+			cout << static_cast<int>(packet[i + 14 + (header.ipv4.hl + header.tcp.off) * 4]);
 		}
 	}
 	else {
-        cout << "\nthere is no payload";
+		cout << "\nthere is no payload";
 	}
 }
 
